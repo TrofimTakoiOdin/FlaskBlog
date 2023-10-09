@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
-from flask_blog.config import Config
+from flask_blog.config import DevelopmentConfig, TestingConfig
 
 
 db = SQLAlchemy()
@@ -14,9 +14,13 @@ login_manager.login_message_category = 'info'
 mail = Mail()
 
 
-def create_app(config_class=Config):
+def create_app(environment='testing'):
     app = Flask(__name__)
-    app.config.from_object(Config)
+
+    if environment == 'development':
+        app.config.from_object('flask_blog.config.DevelopmentConfig')
+    elif environment == 'testing':
+        app.config.from_object('flask_blog.config.TestingConfig')
 
     db.init_app(app)
     bcrypt.init_app(app)
