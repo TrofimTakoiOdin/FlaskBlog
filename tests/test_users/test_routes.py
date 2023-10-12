@@ -1,32 +1,15 @@
 import unittest
-from flask_blog import create_app, db
 from flask_blog.models import User
-from tests import test_utils
+from tests.common_setup import CommonSetup
 
 
-class TestRegisterRoute(unittest.TestCase):
+class TestRegisterRoute(unittest.TestCase, CommonSetup):
 
     def setUp(self):
-        # Create a test app and client
-        self.app = create_app(environment='testing')
-        self.client = self.app.test_client()
-        self.db = db
-        self.app_context = self.app.app_context()
-        self.app_context.push()
-        self.test_user_data = test_utils.create_random_test_user()
-        self.test_user_nonhashed_pwd = self.test_user_data[1]
-        self.test_user = self.test_user_data[0]
-
-        # Add the test user to the database
-        db.create_all()
-        db.session.add(self.test_user)
-        db.session.commit()
+        CommonSetup.setUp(self)
 
     def tearDown(self):
-        # Clean up the test database
-        with self.app.app_context():
-            db.session.remove()
-            db.drop_all()
+        CommonSetup.tearDown(self)
 
     def test_register_get(self):
         # Send a GET request to the register route

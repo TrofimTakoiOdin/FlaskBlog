@@ -3,6 +3,7 @@ import unittest
 from flask import Flask
 from flask_blog import create_app
 
+
 class TestDevelopmentConfig(unittest.TestCase):
     def setUp(self):
         # Create a Flask app using the DevelopmentConfig
@@ -23,6 +24,6 @@ class TestDevelopmentConfig(unittest.TestCase):
         self.assertEqual(self.app.config['MAIL_USERNAME'], os.environ.get('MAIL_DEV'))
         self.assertEqual(self.app.config['MAIL_PASSWORD'], os.environ.get('MAIL_DEV_PWD'))
 
+
 if __name__ == '__main__':
     unittest.main()
-

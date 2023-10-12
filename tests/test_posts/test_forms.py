@@ -1,18 +1,15 @@
 import unittest
 from flask_blog import create_app
 from flask_blog.posts.forms import PostForm
+from tests.common_setup import CommonSetup
 
 
-class TestPostForm(unittest.TestCase):
+class TestPostForm(unittest.TestCase, CommonSetup):
     def setUp(self):
-        # Create a Flask application context
-        self.app = create_app('testing')
-        self.app_context = self.app.app_context()
-        self.app_context.push()
+        CommonSetup.setUp(self)
 
     def tearDown(self):
-        # Pop the Flask application context after the test
-        self.app_context.pop()
+        CommonSetup.tearDown(self)
 
     def test_valid_data(self):
         # Create a PostForm instance with valid data

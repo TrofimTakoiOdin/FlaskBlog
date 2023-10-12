@@ -7,31 +7,21 @@ from flask_blog import create_app, db
 from flask_blog.models import User, Post
 # from flask_blog.config import TestingConfig
 from tests import test_utils
+from tests.common_setup import CommonSetup
 
 
-class TestPostsBlueprint(unittest.TestCase):
+class TestPostsBlueprint(unittest.TestCase, CommonSetup):
+
     def setUp(self):
-        self.app = create_app(environment='testing')
-        self.client = self.app.test_client()
-        self.db = db
-        self.app_context = self.app.app_context()
-        self.app_context.push()
-        self.test_user_data = test_utils.create_random_test_user()
-        self.test_user_nonhashed_pwd = self.test_user_data[1]
-        self.test_user = self.test_user_data[0]
-        # Add the test user to the database
-        db.create_all()
-        db.session.add(self.test_user)
-        db.session.commit()
+        CommonSetup.setUp(self)
 
     def tearDown(self):
-        db.session.remove()
-        db.drop_all()
-        self.app_context.pop()
+        CommonSetup.tearDown(self)
 
     def test_login(self):
         with self.client:
-            response = self.client.post('/login', data={'email': self.test_user.email, 'password': self.test_user_nonhashed_pwd})
+            response = self.client.post('/login',
+                                        data={'email': self.test_user.email, 'password': self.test_user_nonhashed_pwd})
             self.assertTrue(current_user.is_authenticated)
             self.assertEqual(response.status_code, 302)  # Expect a redirect after successful login
             self.assertEqual(response.location, url_for('main.home'))  # Check if it redirects to the home page
@@ -69,7 +59,6 @@ class TestPostsBlueprint(unittest.TestCase):
 
     def test_update_post(self):
         test_user = self.test_user
-
         with self.client:
             self.client.post('/login', data={'email': self.test_user.email, 'password': self.test_user_nonhashed_pwd})
 

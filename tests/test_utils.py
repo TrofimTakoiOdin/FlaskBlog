@@ -4,6 +4,7 @@ from faker import Faker  # You may need to install the 'Faker' library
 
 from flask_bcrypt import Bcrypt
 
+from flask_blog import db, create_app
 from flask_blog.models import User
 
 fake = Faker()
