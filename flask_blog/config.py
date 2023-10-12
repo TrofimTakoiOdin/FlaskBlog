@@ -14,7 +14,7 @@ class DevelopmentConfig:
 
 class TestingConfig:
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY')
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
     TESTING = True
     WTF_CSRF_ENABLED = False
     MAIL_SERVER = 'smtp.yandex.ru'
