@@ -1,33 +1,44 @@
-from flask_blog import create_app, db
-from tests.test_utils import create_random_test_user
+from flask import session
 
+from flask_blog import create_app, db
+from tests import test_utils
 
 class CommonSetup:
     def __init__(self):
+        self.NUM_OF_USERS = None
+        self.test_users = None
         self.app = None
         self.client = None
         self.db = None
         self.app_context = None
-        self.test_user_data = None
-        self.test_user_nonhashed_pwd = None
-        self.test_user = None
 
     def setUp(self):
-
         # Create a test app and client
         self.app = create_app(environment='testing')
         self.client = self.app.test_client()
         self.db = db
         self.app_context = self.app.app_context()
         self.app_context.push()
-        self.test_user_data = create_random_test_user()
-        self.test_user_nonhashed_pwd = self.test_user_data[1]
-        self.test_user = self.test_user_data[0]
+        self.NUM_OF_USERS = 10  # We can change it later
 
-        # Add the test user to the database
+        self.test_users = []  # List to store test users
+
+        # Create and add test users to the database
+        for _ in range(self.NUM_OF_USERS):
+            user, password = test_utils.create_random_test_user()
+            db.session.add(user)
+            self.test_users.append((user, password))
+
         db.create_all()
-        db.session.add(self.test_user)
         db.session.commit()
+
+    def log_in_test_user(self, user, password):
+        response = self.client.post('/login', data={'email': user.email, 'password': password})
+        return response
+
+    def has_open_session(self):
+        with self.app.app_context():
+            return 'user_id' in session
 
     def tearDown(self):
         # Clean up the test database

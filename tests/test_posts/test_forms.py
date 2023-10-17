@@ -39,5 +39,6 @@ class TestPostForm(unittest.TestCase, CommonSetup):
         # Ensure the form is not valid
         self.assertFalse(form.validate())
 
+
 if __name__ == '__main__':
     unittest.main()

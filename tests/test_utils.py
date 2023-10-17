@@ -33,3 +33,11 @@ def create_random_test_user():
     hashed_password = bcrypt.generate_password_hash(random_password).decode('utf-8')
     test_user = User(username=random_username, email=random_email, password=hashed_password, image_file=image_file)
     return test_user, random_password
+
+
+def get_test_user(test_users: list):
+    if test_users:
+        user = test_users.pop()
+        return user[0], user[1]  # tuple User and unhashed pwd
+    else:
+        return None, None

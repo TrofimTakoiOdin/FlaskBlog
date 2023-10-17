@@ -10,6 +10,7 @@ class TestMainRoutes(unittest.TestCase, CommonSetup):
     def setUp(self):
         CommonSetup.setUp(self)
 
+
         # Add test data to the database
         post1 = Post(title='Test Post 1', content='Content of Test Post 1', author=self.test_user)
         post2 = Post(title='Test Post 2', content='Content of Test Post 2', author=self.test_user)

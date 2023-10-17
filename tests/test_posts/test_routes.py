@@ -1,35 +1,32 @@
 import unittest
-from flask import Flask, url_for
-# from flask_bcrypt import Bcrypt
+from flask import url_for
 from flask_login import current_user
-# from flask_sqlalchemy import SQLAlchemy
-from flask_blog import create_app, db
-from flask_blog.models import User, Post
-# from flask_blog.config import TestingConfig
-from tests import test_utils
+from flask_blog import db
+from flask_blog.models import Post
 from tests.common_setup import CommonSetup
+from tests.test_utils import get_test_user
 
 
 class TestPostsBlueprint(unittest.TestCase, CommonSetup):
 
     def setUp(self):
         CommonSetup.setUp(self)
+        self.test_user, self.pwd = get_test_user(self.test_users)
 
     def tearDown(self):
         CommonSetup.tearDown(self)
 
     def test_login(self):
         with self.client:
-            response = self.client.post('/login',
-                                        data={'email': self.test_user.email, 'password': self.test_user_nonhashed_pwd})
+            self.response = self.log_in_test_user(self.test_user, self.pwd)
             self.assertTrue(current_user.is_authenticated)
-            self.assertEqual(response.status_code, 302)  # Expect a redirect after successful login
-            self.assertEqual(response.location, url_for('main.home'))  # Check if it redirects to the home page
+            self.assertEqual(self.response.status_code, 302)  # Expect a redirect after successful login
+            self.assertEqual(self.response.location, url_for('main.home'))  # Check if it redirects to the home page
 
     def test_new_post(self):
         with self.client:
             # Log in the test user
-            self.client.post('/login', data={'email': self.test_user.email, 'password': self.test_user_nonhashed_pwd})
+            self.log_in_test_user(self.test_user, self.pwd)
 
             # Make a POST request to create a new post
             response = self.client.post('/post/new', data={'title': 'Test Post', 'content': 'This is a test post'})
@@ -60,8 +57,7 @@ class TestPostsBlueprint(unittest.TestCase, CommonSetup):
     def test_update_post(self):
         test_user = self.test_user
         with self.client:
-            self.client.post('/login', data={'email': self.test_user.email, 'password': self.test_user_nonhashed_pwd})
-
+            self.log_in_test_user(self.test_user, self.pwd)
             # Create a test post
             test_post = Post(title='Test Post', content='This is a test post', author=test_user)
             db.session.add(test_post)
@@ -90,7 +86,7 @@ class TestPostsBlueprint(unittest.TestCase, CommonSetup):
     def test_delete_post(self):
         test_user = self.test_user
         with self.client:
-            self.client.post('/login', data={'email': self.test_user.email, 'password': self.test_user_nonhashed_pwd})
+            self.log_in_test_user(self.test_user, self.pwd)
 
             # Create a test post and add it to the database
             test_post = Post(title='Test Post', content='This is a test post', author=test_user)
