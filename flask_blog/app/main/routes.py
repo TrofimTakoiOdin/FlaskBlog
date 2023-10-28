@@ -1,7 +1,12 @@
 from flask import render_template, request, Blueprint
-from flask_blog.models import Post
+from flask_blog.models import Post, Permission
 
 main = Blueprint('main', __name__)
+
+
+@main.app_context_processor
+def inject_permissions():
+    return dict(Permission=Permission)
 
 
 @main.route("/")

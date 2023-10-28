@@ -29,11 +29,13 @@ def create_app(environment='testing'):
     login_manager.init_app(app)
     mail.init_app(app)
 
-    from flask_blog.users.routes import users
-    from flask_blog.posts.routes import posts
-    from flask_blog.main.routes import main
+    from flask_blog.app.users.routes import users
+    from flask_blog.app.posts.routes import posts
+    from flask_blog.app.main.routes import main
+    from flask_blog.errors.error_handlers import errors
     app.register_blueprint(users)
     app.register_blueprint(posts)
     app.register_blueprint(main)
+    app.register_blueprint(errors)
 
     return app

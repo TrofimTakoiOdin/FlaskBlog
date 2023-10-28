@@ -5,7 +5,7 @@ from flask import (render_template, url_for, flash,
 from flask_login import current_user, login_required
 from flask_blog import db
 from flask_blog.models import Post, Comment
-from flask_blog.posts.forms import PostForm, CommentForm
+from flask_blog.app.posts.forms import PostForm, CommentForm
 
 posts = Blueprint('posts', __name__)
 
@@ -25,6 +25,7 @@ def new_post():
 
 
 @posts.route('/post/<int:post_id>', methods=['GET', 'POST'])
+@login_required
 def post(post_id):
     post = Post.query.get_or_404(post_id)
     form = CommentForm()

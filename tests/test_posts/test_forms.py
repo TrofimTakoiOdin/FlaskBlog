@@ -1,6 +1,5 @@
 import unittest
-from flask_blog import create_app
-from flask_blog.posts.forms import PostForm
+from flask_blog.app.posts.forms import PostForm
 from tests.common_setup import CommonSetup
 
 

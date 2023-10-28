@@ -1,19 +1,23 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, Regexp
 from flask_login import current_user
 from flask_blog.models import User
 
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username',
-                           validators=[DataRequired(), Length(min=2, max=20)])
+                           validators=[DataRequired(), Length(min=2, max=20),
+                                       Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
+                                              'Usernames must have only letters, numbers,'
+                                              ' dots or ''underscores')])
     email = StringField('Email',
                         validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password',
-                                     validators=[DataRequired(), EqualTo('password')])
+                                     validators=[DataRequired(), EqualTo('password',
+                                                                         message='Passwords must match.')])
     submit = SubmitField('Sign Up')
 
     def validate_username(self, username):
@@ -70,5 +74,6 @@ class RequestResetForm(FlaskForm):
 class ResetPasswordForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password',
-                                     validators=[DataRequired(), EqualTo('password')])
+                                     validators=[DataRequired(), EqualTo('password',
+                                                                         message='Passwords must match.')])
     submit = SubmitField('Reset Password')
