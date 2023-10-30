@@ -4,9 +4,28 @@ from flask_blog import db, bcrypt
 from flask_blog.models import User, Post
 from flask_blog.app.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
                                         RequestResetForm, ResetPasswordForm)
-from flask_blog.app.users.utils import save_picture, send_reset_email
+from flask_blog.app.users.utils import save_picture, send_reset_email, send_confirmation_email
 
 users = Blueprint('users', __name__)
+
+
+@users.before_app_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.ping()
+        if not current_user.confirmed \
+                and request.endpoint \
+                and request.blueprint != 'users' \
+                and request.endpoint != 'static':
+            return redirect(url_for('users.unconfirmed'))
+
+
+@users.route('/unconfirmed')
+def unconfirmed():
+    if current_user.is_anonymous or current_user.confirmed:
+        return redirect(url_for('home.html'))
+    return render_template('unconfirmed.html')
+
 
 @users.route("/register", methods=['GET', 'POST'])
 def register():
@@ -16,9 +35,34 @@ def register():
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(user)
         db.session.commit()
-        flash(f'Account created for {form.username.data}! You are now able to log in', 'success')
+        token = user.generate_confirmation_token()
+        send_confirmation_email(user, token)
+        flash(f'Account created for {form.username.data}! Confirmation letter has been sent to your email address',
+              'success')
         return redirect(url_for('users.login'))
     return render_template('register.html', title='Register', form=form)
+
+
+@users.route('/confirm/<token>')
+@login_required
+def confirm(token):
+    if current_user.confirmed:
+        return redirect(url_for('main.home'))
+    if current_user.confirm(token):
+        db.session.commit()
+        flash('You have confirmed your account. Thanks!', 'success')
+    else:
+        flash('The confirmation link is invalid or has expired.', 'warning')
+    return redirect(url_for('main.home'))
+
+
+@users.route('/confirm')
+@login_required
+def resend_confirmation():
+    token = current_user.generate_confirmation_token()
+    send_confirmation_email(user=current_user, token=token)
+    flash('A new confirmation email has been sent to you by email.')
+    return redirect(url_for('main.home'))
 
 
 @users.route("/login", methods=['GET', 'POST'])
@@ -62,12 +106,13 @@ def account():
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Login', image_file=image_file, form=form)
 
+
 @users.route("/user/<string:username>")
 def user_posts(username):
     page = request.args.get('page', 1, type=int)
     user = User.query.filter_by(username=username).first_or_404()
-    posts = Post.query.filter_by(author=user)\
-        .order_by(Post.date_posted.desc())\
+    posts = Post.query.filter_by(author=user) \
+        .order_by(Post.date_posted.desc()) \
         .paginate(page=page, per_page=5)
     return render_template('user_posts.html', posts=posts, user=user)
 

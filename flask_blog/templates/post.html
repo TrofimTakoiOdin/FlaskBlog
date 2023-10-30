@@ -14,7 +14,12 @@
         {% endif %}
       </div>
       <h2 class="article-title">{{ post.title }}</h2>
-      <p class="article-content">{{ post.content }}</p>
+
+          {% if post.content_html %}
+              {{ post.content_html | safe }}
+          {% else %}
+              {{ post.content }}
+          {% endif %}
     </div>
   </article>
 
@@ -68,3 +73,7 @@
     </div>
   </div>
 {% endblock content %}
+<!--{% block scripts %}-->
+<!--{{ super() }}-->
+<!--{{ pagedown.include_pagedown() }}-->
+<!--{% endblock %}-->

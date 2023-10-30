@@ -4,6 +4,8 @@ from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask import current_app
 from flask_blog import db, login_manager
 from flask_login import UserMixin, AnonymousUserMixin
+from markdown import markdown
+import bleach
 
 
 @login_manager.user_loader
@@ -87,6 +89,7 @@ class User(db.Model, UserMixin):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    confirmed = db.Column(db.Boolean, default=False)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     avatar_hash = db.Column(db.String(32))
@@ -175,6 +178,22 @@ class User(db.Model, UserMixin):
             return None
         return User.query.get(user_id)
 
+    def generate_confirmation_token(self):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'confirm': self.id})
+
+    def confirm(self, token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token.encode('utf-8'))
+        except:
+            return False
+        if data.get('confirm') != self.id:
+            return False
+        self.confirmed = True
+        db.session.add(self)
+        return True
+
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
 
@@ -201,17 +220,29 @@ class Post(db.Model):
     title = db.Column(db.String(100), nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.now)
     content = db.Column(db.Text, nullable=False)
+    content_html = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
+
+    def on_changed_content(self, value, oldvalue, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                        'h1', 'h2', 'h3', 'p', 'img']
+        self.content_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True))
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}')"
 
 
+db.event.listen(Post.content, 'set', Post.on_changed_content)
+
+
 class Comment(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.Text, nullable=False)
+    body = db.Column(db.Text)
     body_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     disabled = db.Column(db.Boolean)
