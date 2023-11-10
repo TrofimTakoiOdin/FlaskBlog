@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="content-section">
+        <h1>
+        {% if request.endpoint == 'main.followers' %}
+            Followers of {{ user.username }}
+        {% else %}
+            Followed by {{ user.username }}
+        {% endif %}
+        </h1>
+        <ul class="list-group">
+            {% for follow in follows %}
+                {% if follow.user != user %}
+                    <li class="list-group-item">
+                        <div class="media">
+                            <img class="rounded-circle account-img" src="{{ url_for('static', filename='profile_pics/' + follow.user.image_file) }}">
+                            <div class="media-body">
+                                <h5 class="mt-0">
+                                    <a href="{{ url_for('main.user_posts', username=follow.user.username) }}">{{ follow.user.username }}</a>
+                                </h5>
+                                <p class="text-secondary">Joined: {{ follow.user.member_since.strftime('%B %Y') if follow.user.member_since else "It's unknown yet" }}</p>
+                                <p class="text-secondary">{{ follow.user.about_me if follow.user.about_me else "No info yet" }}</p>
+                            </div>
+                        </div>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+{% endblock content %}
+
+
+
