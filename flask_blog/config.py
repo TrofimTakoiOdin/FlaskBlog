@@ -4,7 +4,6 @@ import os
 class DevelopmentConfig:
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY')
     FLASK_ADMIN = os.environ.get('FLASK_ADMIN_EMAIL')
-    # SQLALCHEMY_DATABASE_URI = 'sqlite:///development.db'
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DB_URI')
     MAIL_SERVER = 'smtp.yandex.ru'
     MAIL_PORT = 465

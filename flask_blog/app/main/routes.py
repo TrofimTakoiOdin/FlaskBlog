@@ -1,4 +1,4 @@
-from flask import render_template, request, Blueprint, flash, redirect, url_for, current_app
+from flask import render_template, request, Blueprint, flash, redirect, url_for, current_app, make_response
 from flask_login import login_required, current_user
 
 from flask_blog import db
@@ -51,6 +51,7 @@ def my_account():
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('my_account.html', title='Login', image_file=image_file, form=form)
 
+
 @main.route("/user/<string:username>")
 @login_required
 def user_posts(username):
@@ -60,6 +61,7 @@ def user_posts(username):
         .order_by(Post.date_posted.desc()) \
         .paginate(page=page, per_page=5)
     return render_template('user_posts.html', posts=posts, user=user)
+
 
 @main.route('/follow/<username>')
 @login_required
@@ -111,6 +113,7 @@ def followers(username):
                            endpoint='.followers', pagination=pagination,
                            follows=follows)
 
+
 @main.route('/followed_by/<username>')
 def followed_by(username):
     user = User.query.filter_by(username=username).first()
@@ -126,3 +129,19 @@ def followed_by(username):
     return render_template('followers.html', user=user, title="Followed by",
                            endpoint='.followed_by', pagination=pagination,
                            follows=follows)
+
+
+@main.route('/all')
+@login_required
+def show_all():
+    resp = make_response(redirect(url_for('.home')))
+    resp.set_cookie('show_followed', '', max_age=30 * 24 * 60 * 60)
+    return resp
+
+
+@main.route('/followed')
+@login_required
+def show_followed():
+    resp = make_response(redirect(url_for('.home')))
+    resp.set_cookie('show_followed', '1', max_age=30 * 24 * 60 * 60)
+    return resp
