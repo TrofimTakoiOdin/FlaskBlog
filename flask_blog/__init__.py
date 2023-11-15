@@ -6,6 +6,7 @@ from flask_mail import Mail
 from flask_blog.config import DevelopmentConfig, TestingConfig
 from flask_migrate import Migrate
 from flask_pagedown import PageDown
+from flask_bootstrap import Bootstrap
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -31,6 +32,7 @@ def create_app(environment='testing'):
     pagedown.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
+    Bootstrap(app)
 
     from flask_blog.app.users.routes import users
     from flask_blog.app.posts.routes import posts

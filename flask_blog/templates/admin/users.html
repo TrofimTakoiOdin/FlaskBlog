@@ -1,0 +1,41 @@
+{% extends 'layout.html' %}
+{% import 'admin/_user_render.html' as macros %}
+{% import "_pagination_widget.html" as paginate %}
+{% set current_endpoint = request.endpoint%}
+{% block content %}
+<style>
+    h1 {
+        margin-bottom: 18px; /* Adjust the value as needed */
+    }
+    #userTabs {
+        margin-bottom: 20px; /* Adjust the value as needed */
+    }
+</style>
+    <h1>Manage Users</h1>
+
+<!-- Bootstrap Tabs -->
+    <ul class="nav nav-tabs" id="userTabs">
+        <li class="nav-item">
+            <a class="nav-link active btn btn-primary mr-4" id="confirmedUsersTab" data-toggle="tab" href="#confirmedUsers">Confirmed Users</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link btn btn-primary" id="unconfirmedUsersTab" data-toggle="tab" href="#unconfirmedUsers">Unconfirmed Users</a>
+        </li>
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="confirmedUsers">
+
+            {{ macros.render_user_details(confirmed_users) }}
+            {{ paginate.render_pagination(confirmed_users_pagination, current_endpoint) }}
+        </div>
+        <div class="tab-pane fade" id="unconfirmedUsers">
+
+            {{ macros.render_user_details(unconfirmed_users) }}
+            {{ paginate.render_pagination(unconfirmed_users_pagination, current_endpoint) }}
+        </div>
+    </div>
+
+
+{% endblock %}

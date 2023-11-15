@@ -128,6 +128,9 @@ class User(db.Model, UserMixin):
     def is_administrator(self):
         return self.can(Permission.ADMIN)
 
+    def is_moderator(self):
+        return self.can(Permission.MODERATE)
+
     def ping(self):
         self.last_seen = datetime.utcnow()
         db.session.add(self)

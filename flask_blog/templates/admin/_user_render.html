@@ -1,0 +1,21 @@
+{% macro render_user_details(users) %}
+    <ul>
+        {% for user in users %}
+            <li class="list-group-item">
+                <div class="media">
+                    <img class="rounded-circle account-img" src="{{ url_for('static', filename='profile_pics/' + user.image_file) }}">
+                    <div class="media-body">
+                        <h5 class="mt-0">
+                            <a href="{{ url_for('main.user_posts', username=user.username) }}">{{ user.username }}</a>
+                        </h5>
+                        <p class="text-secondary">Joined: {{ user.member_since.strftime('%B %Y') if user.member_since else "It's unknown yet" }}</p>
+                        <p class="text-secondary">{{ user.about_me if user.about_me else "No info yet" }}
+                        <p class="text-secondary">Location: {{ user.location if user.location else "Location unknown" }}</p>
+                        <!-- Edit Profile button -->
+                        <a href="{{ url_for('main.admin_edit_profile', id=user.id) }}" class="btn btn-success">Edit Profile</a>
+                    </div>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}

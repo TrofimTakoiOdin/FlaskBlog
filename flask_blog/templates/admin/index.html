@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="content-section">
+        <h1>Administration Panel</h1>
+
+    </div>
+<div class="sidebar">
+    <ul>
+        <li><a href="{{ url_for('main.admin_users') }}">Users</a></li>
+
+        <!-- Add more links as needed -->
+    </ul>
+</div>
+{% endblock content %}

@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
-
+{% import "_pagination_widget.html" as macros %}
+{% set current_endpoint = request.endpoint%}
+{% set username = user.username %}
 {% block content %}
     <div class="content-section">
         <h1>
@@ -20,13 +22,15 @@
                                     <a href="{{ url_for('main.user_posts', username=follow.user.username) }}">{{ follow.user.username }}</a>
                                 </h5>
                                 <p class="text-secondary">Joined: {{ follow.user.member_since.strftime('%B %Y') if follow.user.member_since else "It's unknown yet" }}</p>
-                                <p class="text-secondary">{{ follow.user.about_me if follow.user.about_me else "No info yet" }}</p>
+                                <p class="text-secondary">{{ follow.user.about_me if follow.user.about_me else "No info yet" }}
+                                <p class="text-secondary">Location: {{ follow.user.location if follow.user.location else "Location unknown" }}</p>
                             </div>
                         </div>
                     </li>
                 {% endif %}
             {% endfor %}
         </ul>
+        {{ macros.render_pagination(pagination, current_endpoint, username=user.username) }}
     </div>
 
 {% endblock content %}

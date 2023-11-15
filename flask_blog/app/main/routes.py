@@ -2,10 +2,10 @@ from flask import render_template, request, Blueprint, flash, redirect, url_for,
 from flask_login import login_required, current_user
 
 from flask_blog import db
-from flask_blog.app.decorators import permission_required
-from flask_blog.app.users.forms import UpdateAccountForm
+from flask_blog.app.decorators import permission_required, admin_required
+from flask_blog.app.users.forms import UpdateAccountForm, EditProfileAdminForm, EditProfileForm
 from flask_blog.app.users.utils import save_picture
-from flask_blog.models import Post, Permission, User
+from flask_blog.models import Post, Permission, User, Role
 
 main = Blueprint('main', __name__)
 
@@ -51,6 +51,99 @@ def my_account():
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('my_account.html', title='Login', image_file=image_file, form=form)
 
+
+@main.route('/edit-profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        current_user.location = form.location.data
+        current_user.about_me = form.about_me.data
+        db.session.add(current_user._get_current_object())
+        db.session.commit()
+        flash('Your profile has been updated.')
+        return redirect(url_for('.user', username=current_user.username))
+    form.location.data = current_user.location
+    form.about_me.data = current_user.about_me
+    return render_template('admin/edit_profile.html', form=form)
+
+@main.route('/admin')
+@login_required
+@admin_required
+def admin_index():
+    # Add any necessary logic for your administration panel
+    return render_template('admin/index.html')
+
+
+@main.route('/edit-profile/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_edit_profile(id):
+    user = User.query.get_or_404(id)
+    # Check if the admin is trying to edit their own profile
+    is_admin_editing_own_profile = current_user.is_administrator() and user == current_user
+
+    form = EditProfileAdminForm(user=user)
+    form.email.render_kw = {'readonly': True}
+    form.username.render_kw = {'readonly': True}
+
+    if form.validate_on_submit():
+        # Prevent changing confirmation status and role if the admin is editing their own profile
+        if is_admin_editing_own_profile:
+            form.confirmed.data = user.confirmed
+            form.role.data = user.role_id
+
+        user.email = form.email.data
+        user.confirmed = form.confirmed.data
+        user.role = Role.query.get(form.role.data)
+        user.username = form.username.data
+        user.location = form.location.data
+        user.about_me = form.about_me.data
+        db.session.add(user)
+        db.session.commit()
+        flash('The profile has been updated.', 'success')
+        return redirect(url_for('.admin_users'))
+    form.email.data = user.email
+    form.username.data = user.username
+    form.confirmed.data = user.confirmed
+    form.role.data = user.role_id
+    form.location.data = user.location
+    form.about_me.data = user.about_me
+    return render_template('admin/edit_profile.html', form=form, user=user)
+
+@main.route('/admin/users')
+@login_required
+@admin_required
+def admin_users():
+    users_per_page = 4
+    page = request.args.get('page', 1, type=int)
+
+    # Paginate the confirmed users query
+    confirmed_users_pagination = User.query.filter_by(confirmed=True) \
+        .paginate(page=page, per_page=users_per_page, error_out=False)
+
+    # Paginate the unconfirmed users query
+    unconfirmed_users_pagination = User.query.filter_by(confirmed=False) \
+        .paginate(page=page, per_page=users_per_page, error_out=False)
+
+    # Retrieve the lists of confirmed and unconfirmed users
+    confirmed_users = confirmed_users_pagination.items
+    unconfirmed_users = unconfirmed_users_pagination.items
+
+    return render_template(
+        'admin/users.html',
+        confirmed_users_pagination=confirmed_users_pagination,
+        unconfirmed_users_pagination=unconfirmed_users_pagination,
+        confirmed_users=confirmed_users,
+        unconfirmed_users=unconfirmed_users
+    )
+
+# @main.route('/admin/moderators')
+# @login_required
+# @admin_required
+# def admin_moderators():
+#     # Logic to retrieve and display moderator data
+#     return render_template('admin/moderators.html', moderators=moderators)
 
 @main.route("/user/<string:username>")
 @login_required

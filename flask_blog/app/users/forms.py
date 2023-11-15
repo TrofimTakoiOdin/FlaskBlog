@@ -64,6 +64,12 @@ class UpdateAccountForm(FlaskForm):
                 raise ValidationError('That email is taken. Please choose a different one.')
 
 
+class EditProfileForm(FlaskForm):
+    location = StringField('Location', validators=[Length(2, 64)])
+    about_me = TextAreaField('About me')
+    submit = SubmitField('Submit')
+
+
 class EditProfileAdminForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(5, 64),
                                              Email()])
