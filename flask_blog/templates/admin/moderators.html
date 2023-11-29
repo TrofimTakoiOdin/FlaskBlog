@@ -1,10 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'layout.html' %}
+{% import 'admin/_user_render.html' as macros %}
+{% import "_pagination_widget.html" as paginate %}
+{% set current_endpoint = request.endpoint%}
+{% block content %}
 
-</body>
-</html>
+    <h1>Manage Moderators</h1>
+
+    <!-- Bootstrap Tabs for Moderators -->
+    <ul class="nav nav-tabs" id="moderatorTabs">
+        <li class="nav-item">
+            <a class="nav-link active btn btn-primary mr-4" id="activeModeratorsTab" data-toggle="tab" href="#activeModerators">Active Moderators</a>
+        </li>
+    </ul>
+
+    <!-- Tab content for Moderators -->
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="activeModerators">
+
+            {{ macros.render_user_details(moderators) }}
+            {{ paginate.render_pagination(moderators_pagination, current_endpoint) }}
+        </div>
+    </div>
+
+{% endblock %}

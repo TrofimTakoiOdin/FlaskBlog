@@ -4,12 +4,11 @@
     <div class="content-section">
         <h1>Administration Panel</h1>
 
-    </div>
-<div class="sidebar">
-    <ul>
-        <li><a href="{{ url_for('main.admin_users') }}">Users</a></li>
+        <!-- Button for managing users -->
+        <a href="{{ url_for('main.admin_users') }}" class="btn btn-primary">Manage Users</a>
 
-        <!-- Add more links as needed -->
-    </ul>
-</div>
+        <!-- Button for managing moderators -->
+        <a href="{{ url_for('main.admin_moderators') }}" class="btn btn-primary">Manage Moderators</a>
+    </div>
+
 {% endblock content %}

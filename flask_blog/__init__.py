@@ -38,9 +38,11 @@ def create_app(environment='testing'):
     from flask_blog.app.posts.routes import posts
     from flask_blog.app.main.routes import main
     from flask_blog.errors.error_handlers import errors
+    from flask_blog.commands.users_crud_cli import users_crud
     app.register_blueprint(users)
     app.register_blueprint(posts)
     app.register_blueprint(main)
     app.register_blueprint(errors)
+    app.register_blueprint(users_crud)
 
     return app

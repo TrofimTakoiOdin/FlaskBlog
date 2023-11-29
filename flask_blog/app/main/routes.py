@@ -1,4 +1,4 @@
-from flask import render_template, request, Blueprint, flash, redirect, url_for, current_app, make_response
+from flask import render_template, request, Blueprint, flash, redirect, url_for, current_app, make_response, session
 from flask_login import login_required, current_user
 
 from flask_blog import db
@@ -102,7 +102,11 @@ def admin_edit_profile(id):
         db.session.add(user)
         db.session.commit()
         flash('The profile has been updated.', 'success')
-        return redirect(url_for('.admin_users'))
+
+        # Retrieve the previous endpoint from the session
+        prev_endpoint = session.pop('prev_endpoint', None)
+
+        return redirect(prev_endpoint or url_for('.admin_users'))
     form.email.data = user.email
     form.username.data = user.username
     form.confirmed.data = user.confirmed
@@ -115,15 +119,18 @@ def admin_edit_profile(id):
 @login_required
 @admin_required
 def admin_users():
+    session['prev_endpoint'] = '/admin/users'
     users_per_page = 4
     page = request.args.get('page', 1, type=int)
 
-    # Paginate the confirmed users query
-    confirmed_users_pagination = User.query.filter_by(confirmed=True) \
+    # Paginate the confirmed users query excluding admins and moderators
+    confirmed_users_pagination = User.query.join(Role) \
+        .filter(User.confirmed == True, ~Role.name.in_(['Administrator', 'Moderator'])) \
         .paginate(page=page, per_page=users_per_page, error_out=False)
 
-    # Paginate the unconfirmed users query
-    unconfirmed_users_pagination = User.query.filter_by(confirmed=False) \
+    # Paginate the unconfirmed users query excluding admins and moderators
+    unconfirmed_users_pagination = User.query.join(Role) \
+        .filter(User.confirmed == False, ~Role.name.in_(['Administrator', 'Moderator'])) \
         .paginate(page=page, per_page=users_per_page, error_out=False)
 
     # Retrieve the lists of confirmed and unconfirmed users
@@ -138,12 +145,24 @@ def admin_users():
         unconfirmed_users=unconfirmed_users
     )
 
-# @main.route('/admin/moderators')
-# @login_required
-# @admin_required
-# def admin_moderators():
-#     # Logic to retrieve and display moderator data
-#     return render_template('admin/moderators.html', moderators=moderators)
+@main.route('/admin/moderators')
+@login_required
+@admin_required
+def admin_moderators():
+    # Store the current endpoint in the session
+    session['prev_endpoint'] = '/admin/moderators'
+    users_per_page = 4
+    page = request.args.get('page', 1, type=int)
+
+    # Paginate the moderators query
+    moderators_pagination = User.query.join(Role).filter(Role.name == 'Moderator') \
+        .paginate(page=page, per_page=users_per_page, error_out=False)
+
+    # Retrieve the list of moderators
+    moderators = moderators_pagination.items
+
+    return render_template('admin/moderators.html', moderators=moderators,
+                           moderators_pagination=moderators_pagination)
 
 @main.route("/user/<string:username>")
 @login_required
