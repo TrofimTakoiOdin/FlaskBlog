@@ -35,8 +35,7 @@ def get_user_by_id_or_username(identifier):
 
     This function takes an identifier, checks if it is a digit (indicating an ID),
     and retrieves the corresponding user. If the identifier is a non-numeric string,
-    it searches for the user by username. If no user is found, the user is prompted
-    to enter a valid ID or username.
+    it searches for the user by username.
 
     Parameters:
     - identifier (str): The ID or username of the user to be retrieved.
@@ -46,17 +45,10 @@ def get_user_by_id_or_username(identifier):
 
     """
 
-    while True:
-        if identifier.isdigit():
-            identifier = int(identifier)
-            user = User.query.get(identifier)
-        else:
-            user = User.query.filter_by(username=identifier).first()
-
-        if user:
-            break  # Valid user found, exit the loop
-        else:
-            click.echo(f"User with ID or username '{identifier}' not found.")
-            identifier = click.prompt("Enter a valid user ID or username")
+    if identifier.isdigit():
+        identifier = int(identifier)
+        user = User.query.get(identifier)
+    else:
+        user = User.query.filter_by(username=identifier).first()
 
     return user

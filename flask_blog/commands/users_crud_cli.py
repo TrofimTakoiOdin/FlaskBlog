@@ -178,3 +178,4 @@ def delete_user(identifier):
         db.session.rollback()
         error_message = click.style(f"Error deleting user: {e}", fg="red")
         click.echo(error_message)
+
