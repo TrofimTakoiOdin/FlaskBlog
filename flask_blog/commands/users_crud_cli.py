@@ -23,7 +23,8 @@ def create_confirmed_user(username, email, password):
 
     Examples:
     - flask users_crud create_confirmed_user
-    - flask users_crud create_confirmed_user --username=johndoe --email=johndoe@example.com --password=securepassword
+    -
+
     """
     # Prompt for each parameter separately
     username = get_non_empty_value(username, "Enter username")
