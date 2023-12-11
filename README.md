@@ -40,7 +40,7 @@ erDiagram
   User ||--o{ Comment : has
   User }|..|| Role : has
   User ||--o{ Follow : follows
-  User }o--|| Follow : followed by
+  User }o--|| Follow : followed_by
   User {
     int id
     int role_id
