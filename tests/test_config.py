@@ -7,7 +7,7 @@ from flask_blog import create_app
 class TestDevelopmentConfig(unittest.TestCase):
     def setUp(self):
         # Create a Flask app using the DevelopmentConfig
-        self.app = create_app('testing')
+        self.app = create_app('development')
         self.app_context = self.app.app_context()
         self.app_context.push()
 

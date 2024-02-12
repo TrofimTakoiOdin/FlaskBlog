@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 
 from flask_blog import db
 from flask_blog.app.decorators import permission_required, admin_required
+from flask_blog.app.posts.forms import PostForm
 from flask_blog.app.users.forms import UpdateAccountForm, EditProfileAdminForm, EditProfileForm
 from flask_blog.app.users.utils import save_picture
 from flask_blog.models import Post, Permission, User, Role
@@ -18,9 +19,21 @@ def inject_permissions():
 @main.route("/")
 @main.route("/home")
 def home():
+    per_page = 5
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
-    return render_template('home.html', posts=posts)
+    show_followed = False
+    if current_user.is_authenticated:
+        show_followed = bool(request.cookies.get('show_followed', ''))
+    if show_followed:
+        query = current_user.followed_posts
+    else:
+        query = Post.query
+    posts = query.order_by(Post.date_posted.desc()).paginate(
+        page=page, per_page=per_page,
+        error_out=False)
+
+    return render_template('home.html',
+                           show_followed=show_followed,posts=posts)
 
 
 @main.route("/about")

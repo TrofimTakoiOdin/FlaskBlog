@@ -7,6 +7,7 @@ from flask_blog.config import DevelopmentConfig, TestingConfig
 from flask_migrate import Migrate
 from flask_pagedown import PageDown
 from flask_bootstrap import Bootstrap
+from flask_blog.config import config
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -18,13 +19,11 @@ login_manager.login_message_category = 'info'
 mail = Mail()
 
 
-def create_app(environment='testing'):
+def create_app(config_name):
     app = Flask(__name__)
 
-    if environment == 'development':
-        app.config.from_object('flask_blog.config.DevelopmentConfig')
-    elif environment == 'testing':
-        app.config.from_object('flask_blog.config.TestingConfig')
+    app.config.from_object(config[config_name])
+    config[config_name].init_app(app)
 
     db.init_app(app)
     migrate.init_app(app, db)

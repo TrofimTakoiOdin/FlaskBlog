@@ -135,14 +135,14 @@ class User(db.Model, UserMixin):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
 
-    def gravatar_hash(self):
-        return hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
-
-    def gravatar(self, size=100, default='identicon', rating='g'):
-        url = 'https://secure.gravatar.com/avatar'
-        hashh = self.avatar_hash or self.gravatar_hash()
-        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
-            url=url, hash=hashh, size=size, default=default, rating=rating)
+    # def gravatar_hash(self):
+    #     return hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
+    #
+    # def gravatar(self, size=100, default='identicon', rating='g'):
+    #     url = 'https://secure.gravatar.com/avatar'
+    #     hashh = self.avatar_hash or self.gravatar_hash()
+    #     return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
+    #         url=url, hash=hashh, size=size, default=default, rating=rating)
 
     def follow(self, user):
         if not self.is_following(user):
@@ -168,8 +168,8 @@ class User(db.Model, UserMixin):
 
     @property
     def followed_posts(self):
-        return Post.query.join(Follow, Follow.followed_id == Post.author_id) \
-            .filter(Follow.follower_id == self.id)
+        return Post.query.join(Follow, Follow.followed_id == Post.user_id) \
+            .filter(Follow.follower_id == self.id, Post.user_id != self.id)
 
     def get_reset_token(self):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -213,11 +213,6 @@ class AnonymousUser(AnonymousUserMixin):
 
 
 login_manager.anonymous_user = AnonymousUser
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
 
 
 class Post(db.Model):

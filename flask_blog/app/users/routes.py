@@ -20,10 +20,11 @@ def before_request():
             return redirect(url_for('users.unconfirmed'))
 
 
+
 @users.route('/unconfirmed')
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
-        return redirect(url_for('home.html'))
+        return redirect(url_for('main.home'))
     return render_template('unconfirmed.html')
 
 
@@ -73,6 +74,7 @@ def login():
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
+            flash(f"Welcome, {user.username}!", 'success')
             return redirect(next_page) if next_page else redirect(url_for('main.home'))
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
