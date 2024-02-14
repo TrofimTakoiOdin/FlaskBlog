@@ -1,4 +1,5 @@
-from flask import render_template, request, Blueprint, flash, redirect, url_for, current_app, make_response, session
+from flask import render_template, request, Blueprint, flash, redirect, url_for, current_app, make_response, session, \
+    abort
 from flask_login import login_required, current_user
 
 from flask_blog import db
